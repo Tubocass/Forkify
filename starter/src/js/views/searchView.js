@@ -9,6 +9,7 @@ export const getInput = () => {
  };
 export const clearResults = () => {
     elements.searchResultsList.innerHTML = '';
+    elements.searchPages.innerHTML = '';
 }
 
 // Pasta Rigatone with parm
@@ -45,7 +46,43 @@ const limitRecipeTitle = (title, limit = 17) => {
     elements.searchResultsList.insertAdjacentHTML("beforeend", markup)
 };
 
- export const renderResulsts = recipes => {
-     recipes.forEach(renderRecipe);
+// type: previous or next
+const CreateButton = (page, type) =>{
+    return `
+        <button class="btn-inline results__btn--${type}" data-goto=${type === 'prev'? page - 1:page + 1}>
+        <span>Page ${type === 'prev'? page - 1:page + 1}</span>
+            <svg class="search__icon">
+                <use href="img/icons.svg#icon-triangle-${type === 'prev'? 'left':'right'}"></use>
+            </svg>
+        </button>
+    `;
+}
+const renderButtons = (page, numResults, resPerPage) => {
+    const pages = Math.ceil(numResults / resPerPage);
+    let button;
+    if(page === 1)
+    {
+        //only button to next page
+        button = CreateButton(page, 'next');
+    }else if(page < pages){
+        //both buttons
+        button = `
+        ${CreateButton(page, 'prev')}
+        ${CreateButton(page, 'next')}
+        `;
+    }else if(page === pages && pages > 1){
+        //only goto previous page
+        button = CreateButton(page, 'prev');
+    }
+    elements.searchPages.insertAdjacentHTML('afterbegin', button);
+}
+
+ export const renderResulsts = (recipes, page = 1, resultsPerPage = 10) => {
+    const start = (page-1) * resultsPerPage;
+    const end = page * resultsPerPage;
+
+    recipes.slice(start, end).forEach(renderRecipe);
+
+    renderButtons(page, recipes.length, resultsPerPage);
  };
 
